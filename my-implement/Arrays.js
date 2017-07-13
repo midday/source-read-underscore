@@ -6,11 +6,12 @@ var _ = {};
  * @param  {Number} [n]  
  */
 _.first = function(array, n) {
-    return array.splice(0, n !== undefined ? n : 1);
+    return array.slice(0, n !== undefined ? n : 1);
+    // return array.splice(0, n !== undefined ? n : 1);
 };
 
 //test
-/*var result = _.first([5, 4, 3, 2, 1],100);
+/*var result = _.first([5, 4, 3, 2, 1]);
 console.log(result);*/
 
 /**
@@ -19,8 +20,9 @@ console.log(result);*/
  * @param  {Number} [n]  
  */
 _.initial = function(array, n) {
-    array.splice(n !== undefined ? -n : -1);
-    return array;
+    // array.splice(n !== undefined ? -n : -1);
+    // return array;
+    return array.slice(0, n !== undefined ? -n : -1);
 };
 
 //test
@@ -33,7 +35,8 @@ console.log(result);*/
  * @param  {Number} [n]  
  */
 _.last = function(array, n) {
-	return array.splice(n !== undefined ? -n : -1);
+    // return array.splice(n !== undefined ? -n : -1);
+    return array.slice(n !== undefined ? -n : -1);
 };
 
 //test
@@ -46,7 +49,8 @@ console.log(result);*/
  * @param  {Number} [index]
  */
 _.rest = function(array, index) {
-	return array.splice(index !== undefined ? index : 1);
+    // return array.splice(index !== undefined ? index : 1);
+    return array.slice(index !== undefined ? index : 1);
 };
 
 //test
@@ -57,14 +61,14 @@ console.log(result);*/
  * 返回一个除去所有false值的 array副本。 
  * @param  {Array} array
  */
-_.compact = function(array){
-	var result = [];
-	for(var i=0;i<array.length;i++){
-		if(array[i]){
-			result.push(array[i]);
-		}
-	}
-	return result;
+_.compact = function(array) {
+    var result = [];
+    for (var i = 0; i < array.length; i++) {
+        if (array[i]) {
+            result.push(array[i]);
+        }
+    }
+    return result;
 };
 
 //test
@@ -76,9 +80,21 @@ console.log(result);*/
  * @param  {Array} array    
  * @param  {[type]} [shallow]
  */
-_.flatten = function(array, shallow){
-
+_.flatten = function(array, shallow) {
+    var result = [];
+    var _flatten = function(array) {
+        for (var i = 0; i < array.length; i++) {
+            if (array[i].constructor === Array && !shallow) {
+                _flatten(array[i]);
+            } else {
+                result.push(array[i]);
+            }
+        }
+    };
+    _flatten(array);
+    return result;
 };
+
 
 //test
 /*var result = _.flatten([1, [2], [3, [[4]]]]);
@@ -119,19 +135,19 @@ console.log(result);*/
  * @param  {Array} *arrays
  */
 _.union = function() {
-	var result = [];
-	var arrays = [].slice.call(arguments);
-	var hash = {};
-	for(var i = 0;i<arrays.length;i++){
-		var array = arrays[i];
-		for(var j=0;j<array.length;j++){
-			hash[array[j]] = array[j];	
-		}
-	}
-	for(var k in hash){
-		result.push(hash[k]);
-	}
-	return result;
+    var result = [];
+    var arrays = [].slice.call(arguments);
+    var hash = {};
+    for (var i = 0; i < arrays.length; i++) {
+        var array = arrays[i];
+        for (var j = 0; j < array.length; j++) {
+            hash[array[j]] = array[j];
+        }
+    }
+    for (var k in hash) {
+        result.push(hash[k]);
+    }
+    return result;
 };
 
 //test
@@ -168,16 +184,42 @@ _.intersection = function() {
 };
 
 //test
-var result = _.intersection([1, 2, 3], [101, 2, 1, 10], [2, 1]);
-console.log(result);
+/*var result = _.intersection([1, 2, 3], [101, 2, 1, 10], [2, 1]);
+console.log(result);*/
 
 /**
  * 类似于without，但返回的值来自array参数数组，并且不存在于other 数组.
  * @param  {Array} array  
  * @param  {[type]} *others
  */
-_.difference = function(array) {
-	
+_.difference = function() {
+    var result = [];
+    var arrays = [].slice.call(arguments);
+    var _differenceTwoArray = function(array1, array2) {
+        var differenceArray = [];
+        for (var k = 0; k < array1.length; k++) {
+            var hasDifference = true;
+            for (var m = 0; m < array2.length; m++) {
+                if (array1[k] == array2[m]) {
+                    hasDifference = false;
+                    break;
+                }
+            }
+            if (hasDifference) {
+                differenceArray.push(array1[k]);
+            }
+        }
+        return differenceArray;
+    };
+    if (arrays.length === 1) {
+        result = arrays[0];
+    } else {
+        result = arrays[0];
+        for (var i = 1; i < arrays.length; i++) {
+            result = _differenceTwoArray(result, arrays[i]);
+        }
+    }
+    return result;
 };
 
 //test
@@ -191,7 +233,15 @@ console.log(result);*/
  * @param  {Function} [fn]
  */
 _.uniq = function(array, isSorted, fn) {
-
+    var result = [];
+    var hash = {};
+    for (var i = 0; i < array.length; i++) {
+        hash[array[i]] = array[i];
+    }
+    for (var j in hash) {
+        result.push(hash[j]);
+    }
+    return result;
 };
 
 //test
@@ -202,9 +252,25 @@ console.log(result);*/
  * 将每个arrays中相应位置的值合并在一起。在合并分开保存的数据时很有用. 如果你用来处理矩阵嵌套数组时, _.zip.apply 可以做类似的效果。
  * @param  {Array} *arrays
  */
-_.zip = function(){
-
+_.zip = function() {
+    var result = [];
+    var arrays = [].slice.call(arguments);
+    var maxArrayLength = arrays[1].length;
+    for (var i = 1; i < arrays.length; i++) {
+        if (arrays[i].length > maxArrayLength) {
+            maxArrayLength = arrays[i].length;
+        }
+    }
+    for (var j = 0; j < maxArrayLength; j++) {
+        var zipElement = [];
+        for (var k = 0; k < arrays.length; k++) {
+            zipElement.push(arrays[k][j] !== undefined ? arrays[k][j] : null);
+        }
+        result.push(zipElement);
+    }
+    return result;
 };
+
 
 //test
 /*var result = _.zip(['moe', 'larry', 'curly'], [30, 40, 50], [true, false, false]);
@@ -214,9 +280,19 @@ console.log(result);*/
  * 与zip功能相反的函数，给定若干arrays，返回一串联的新数组，其第一元素个包含所有的输入数组的第一元素，其第二包含了所有的第二元素，依此类推。
  * @param  {Array} *arrays
  */
-_.unzip = function() {
-
+_.unzip = function(array) {
+    var maxArrayLength = array[1].length;
+    var result = [];
+    for (var i = 0; i < maxArrayLength; i++) {
+        var unzipElement = [];
+        for (var j = 0; j < array.length; j++) {
+            unzipElement.push(array[j][i]);
+        }
+        result.push(unzipElement);
+    }
+    return result;
 };
+
 
 //test
 /*var result = _.unzip([['moe', 'larry', 'curly'], [30, 40, 50], [true, false, false]])
@@ -228,7 +304,11 @@ console.log(result);*/
  * @param  {[type]} [values]       
  */
 _.object = function(list, values) {
-
+    var result = {};
+    for (var i = 0; i < list.length; i++) {
+        values ? result[list[i]] = values[i] : result[list[i][0]] = list[i][1];
+    }
+    return result;
 };
 
 //test
@@ -244,8 +324,17 @@ console.log(result);*/
  * @param  {Boolean} [isSorted]
  */
 _.indexOf = function(array, value, isSorted) {
-
+    var result = -1;
+    for (var i = 0; i < array.length; i++) {
+        if (array[i] === value) {
+            result = i;
+            break;
+        }
+    }
+    //二分查找待做
+    return result;
 };
+
 
 //test
 /*var result = _.indexOf([1, 2, 3], 2);
@@ -258,7 +347,15 @@ console.log(result);*/
  * @param  {Number} [fromIndex]
  */
 _.lastIndexOf = function(array, value, fromIndex) {
-
+    var result = -1;
+    var len = fromIndex ? array.length - fromIndex : array.length;
+    for (var i = len - 1; i > -1; i--) {
+        if (array[i] === value) {
+            result = i;
+            break;
+        }
+    }
+    return result;
 };
 
 //test
@@ -273,8 +370,22 @@ console.log(result);*/
  * @param  {Boolean} [context] 
  */
 _.sortedIndex = function(list, value, fn, context) {
-
+    var result = -1;
+    for (var i = 1; i <= list.length; i++) {
+        var condition;
+        if (typeof value === 'object' && typeof fn === 'string') {
+            condition = value[fn] > list[i - 1][fn] && value[fn] < list[i][fn];
+        } else {
+            condition = value > list[i - 1] && value < list[i]
+        }
+        if (condition) {
+            result = i;
+            break;
+        }
+    }
+    return result;
 };
+
 
 //test
 /*var result = _.sortedIndex([10, 20, 30, 40, 50], 35);
@@ -290,11 +401,35 @@ console.log(result);*/
  * @param  {Object} [context]
  */
 _.findIndex = function(array, fn, context) {
-
+    var result = -1;
+    for (var i = 0; i < array.length; i++) {
+        if (fn.constructor === Function) {
+            if (fn.call(context, array[i], i, array)) {
+                result = i;
+                break;
+            }
+        }
+        if (fn.constructor === Object) {
+            var flag = true;
+            for (var j in fn) {
+                if (fn[j] !== array[i][j]) {
+                    flag = false;
+                    break;
+                }
+            }
+            if (flag) {
+                result = i;
+                break;
+            }
+        }
+    }
+    return result;
 };
 
 //test
-/*var result = _.findIndex([4, 6, 8, 12], isPrime);
+/*var result = _.findIndex([4, 6, 8, 12], function(num){
+	return num % 2 === 0;
+});
 console.log(result);*/
 
 /**
@@ -304,7 +439,29 @@ console.log(result);*/
  * @param  {Object} [context]
  */
 _.findLastIndex = function(array, fn, context) {
-
+    var result = -1;
+    for (var i = array.length - 1; i > 0; i--) {
+        if (fn.constructor === Function) {
+            if (fn.call(context, array[i], i, array)) {
+                result = i;
+                break;
+            }
+        }
+        if (fn.constructor === Object) {
+            var flag = true;
+            for (var j in fn) {
+                if (fn[j] !== array[i][j]) {
+                    flag = false;
+                    break;
+                }
+            }
+            if (flag) {
+                result = i;
+                break;
+            }
+        }
+    }
+    return result;
 };
 
 //test
@@ -323,9 +480,31 @@ console.log(result);*/
  * @param  {Number} stop   
  * @param  {Number} [step] 
  */
-_.range = function(start, stop, step) {
-
+_.range = function() {
+    var result = [];
+    var _args = [].slice.call(arguments);
+    var start, stop, step;
+    if (_args.length === 1) {
+        start = 0;
+        stop = _args[0];
+        step = 1;
+    }
+    if (_args.length === 2) {
+        start = _args[0];
+        stop = _args[1];
+        step = 1;
+    }
+    if (_args.length === 3) {
+        start = _args[0];
+        stop = _args[1];
+        step = _args[2];
+    }
+    for (var i = start; i < stop / step; i++) {
+        step !== -1 ? result.push(i * step) : result.push(i * -step);
+    }
+    return result;
 };
+
 
 //test
 /*var result = _.range(10);
