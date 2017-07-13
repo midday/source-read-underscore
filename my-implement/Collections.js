@@ -296,7 +296,10 @@ _.invoke = function(list, methodName) {
     var _args = [].slice.call(arguments, 2);
     var result = [];
     for (var i = 0; i < list.length; i++) {
-        var invokeResult = eval('list[i].' + methodName + '(' + _args.join(',') + ')');
+        //1.eval实现
+        // var invokeResult = eval('list[i].' + methodName + '(' + _args.join(',') + ')');
+        //2.Array.prototype.call实现
+        var invokeResult = Array.prototype[methodName].apply(list[i],_args);
         result.push(invokeResult);
     }
     return result;
@@ -304,8 +307,8 @@ _.invoke = function(list, methodName) {
 
 //测试
 /*var result = _.invoke([[5, 1, 7], [3, 2, 1]], 'sort');
-console.log(result);
-*/
+console.log(result);*/
+
 
 /**
  * pluck也许是map最常使用的用例模型的简化版本，即萃取数组对象中某属性值，返回一个数组。
@@ -333,22 +336,10 @@ console.log(result);*/
  * @param  {Object}   [context] 
  */
 _.max = function(list, fn, context) {
-    if (fn) {
-        var hash = {};
-        for (var i = 0; i < list.length; i++) {
-            hash[fn.call(context, list[i])] = list[i];
-        }
-        var maxValue = Object.keys(hash).sort(function(a, b) {
-            return a > b;
-        }).pop();
-
-        result = hash[maxValue];
-    } else {
-        result = list.sort(function(a, b) {
-            return a > b;
-        }).pop();
-    }
-    return result;
+	var result = list.sort(function(a,b){
+		return fn ? (fn.call(context,a) > fn.call(context,b)) : a > b;
+	}).pop();
+	return result;
 };
 
 //测试
@@ -363,20 +354,9 @@ console.log(maxValue);*/
  * @param  {Object}   [context] 
  */
 _.min = function(list, fn, context) {
-    if (fn) {
-        var hash = {};
-        for (var i = 0; i < list.length; i++) {
-            hash[fn.call(context, list[i])] = list[i];
-        }
-        var minValue = Object.keys(hash).sort(function(a, b) {
-            return a > b;
-        }).shift();
-        result = hash[maxValue];
-    } else {
-        result = list.sort(function(a, b) {
-            return a > b;
-        }).shift();
-    }
+    var result = list.sort(function(a,b){
+		return fn ? (fn.call(context,a) > fn.call(context,b)) : a > b;
+	}).shift();
     return result;
 };
 
