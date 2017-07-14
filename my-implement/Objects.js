@@ -5,7 +5,13 @@ var _ = {};
  * @param  {Object} object 
  */
 _.keys = function(object) {
-
+    var result = [];
+    for (var i in object) {
+        if (object.hasOwnProperty(i)) {
+            result.push(i);
+        }
+    }
+    return result;
 };
 
 //test
@@ -17,7 +23,11 @@ console.log(result);*/
  * @param  {Object} object 
  */
 _.allKeys = function(object) {
-
+    var result = [];
+    for (var i in object) {
+        result.push(i);
+    }
+    return result;
 };
 
 //test
@@ -33,7 +43,11 @@ console.log(result);*/
  * @param  {Object} object 
  */
 _.values = function(object) {
-
+    var result = [];
+    for (var i in object) {
+        result.push(object[i]);
+    }
+    return result;
 };
 
 //test
@@ -47,7 +61,11 @@ console.log(result);*/
  * @param  {Object} [context] 
  */
 _.mapObject = function(object, fn, context) {
-
+    var result = {};
+    for (var i in object) {
+        result[i] = fn.call(context, object[i], i);
+    }
+    return result;
 };
 
 //test
@@ -61,7 +79,11 @@ console.log(result);*/
  * @param  {Object} object 
  */
 _.pairs = function(object) {
-
+    var result = [];
+    for (var i in object) {
+        result.push([i, object[i]]);
+    }
+    return result;
 };
 
 //test
@@ -73,11 +95,15 @@ console.log(result);*/
  * @param  {Object} object 
  */
 _.invert = function(object) {
-
+    var result = {};
+    for (var i in object) {
+        result[object[i]] = i;
+    }
+    return result;
 };
 
 //test
-/*var result = _.invert({Moe: "Moses", Larry: "Louis", Curly: "Jerome"});
+/*var result = _.invert({ Moe: "Moses", Larry: "Louis", Curly: "Jerome" });
 console.log(result);*/
 
 /**
@@ -86,19 +112,35 @@ console.log(result);*/
  * @param  {Object} props     
  */
 _.create = function(prototype, props) {
-
+    function createObject(prototype) {
+        var F = function() {};
+        F.prototype = prototype;
+        return new F();
+    };
+    var obj = createObject(prototype);
+    for (var i in props) {
+        obj[i] = props[i];
+    }
+    return obj;
 };
 
 //test
-/*var moe = _.create(Stooge.prototype, {name: "Moe"});
+/*function Stooge(){}
+var moe = _.create(Stooge.prototype, {name: "Moe"});
 console.log(moe);*/
 
 /**
  * 返回一个对象里所有的方法名, 而且是已经排序的 — 也就是说, 对象里每个方法(属性值是一个函数)的名称.
  * @param  {Object} object 
  */
-_.functions = function(object){
-
+_.functions = function(object) {
+    var result = [];
+    for (var i in object) {
+        if (object[i].constructor === Function) {
+            result.push(i);
+        }
+    }
+    return result.sort();
 };
 
 //test
@@ -112,19 +154,34 @@ console.log(result);*/
  * @param  {Object} [context] 
  */
 _.findKey = function(object, fn, context) {
-
+    var result;
+    for (var i in object) {
+        if (i === fn.call(context, object[i], i)) {
+            result = i;
+            break;
+        }
+    }
+    return result;
 };
 
 //test
-
+/*var result = _.findKey({a:1,b:2}, function(){return 'a'}); 
+console.log(result);*/
 
 /**
  * 复制source对象中的所有属性覆盖到destination对象上，并且返回 destination 对象. 复制是按顺序的, 所以后面的对象属性会把前面的对象属性覆盖掉(如果有重复).
  * @param  {Object} destination 
  * @param  {Objects} *sources    
  */
-_.extend = function(destination){
-
+_.extend = function(destination) {
+    var sources = [].slice.call(arguments, 1);
+    for (var i = 0; i < sources.length; i++) {
+        var source = sources[i];
+        for (var j in source) {
+            destination[j] = source[j];
+        }
+    }
+    return destination;
 };
 
 //test
@@ -136,8 +193,17 @@ console.log(result);*/
  * @param  {Object} destination 
  * @param  {Objects} *sources    
  */
-_.extendOwn = function(destination){
-
+_.extendOwn = function(destination) {
+    var sources = [].slice.call(arguments, 1);
+    for (var i = 0; i < sources.length; i++) {
+        var source = sources[i];
+        for (var j in source) {
+            if (source.hasOwnProperty(j)) {
+                destination[j] = source[j];
+            }
+        }
+    }
+    return destination;
 };
 
 //test
@@ -149,14 +215,32 @@ _.extendOwn = function(destination){
  * @param  {Objects} *keys  
  */
 _.pick = function(object) {
-
+    var result = {};
+    var keys = [].slice.call(arguments, 1);
+    if (keys.length === 1 && keys[0].constructor === Function) {
+        for (var i in object) {
+            if (keys[0].call(this, object[i], i)) {
+                result[i] = object[i];
+            }
+        }
+    }
+    if (keys.length === 1 && keys[0].constructor === String) {
+        result[keys[0]] = object[keys[0]];
+    }
+    if (keys.length > 1) {
+        for (var i = 0; i < keys.length; i++) {
+            result[keys[i]] = object[keys[i]];
+        }
+    }
+    return result;
 };
+
 
 //test
 /*var result = _.pick({name: 'moe', age: 50, userid: 'moe1'}, 'name', 'age');
 console.log(result);
 var result = _.pick({name: 'moe', age: 50, userid: 'moe1'}, function(value, key, object) {
-  return _.isNumber(value);
+  return typeof value === 'number';
 });
 console.log(result);*/
 
@@ -166,16 +250,33 @@ console.log(result);*/
  * @param  {Objects} *keys  
  */
 _.omit = function(object) {
-
+    var keys = [].slice.call(arguments, 1);
+    if (keys.length === 1 && keys[0].constructor === Function) {
+        for (var i in object) {
+            if (keys[0].call(this, object[i], i)) {
+                delete object[i];
+            }
+        }
+    }
+    if (keys.length === 1 && keys[0].constructor === String) {
+        delete object[keys[0]];
+    }
+    if (keys.length > 1) {
+        for (var i = 0; i < keys.length; i++) {
+            delete object[keys[i]];
+        }
+    }
+    return object;
 };
 
 //test
-/*var result = _.omit({name: 'moe', age: 50, userid: 'moe1'}, 'userid');
+/*var result = _.omit({ name: 'moe', age: 50, userid: 'moe1' }, 'userid');
 console.log(result);
-var result = _.omit({name: 'moe', age: 50, userid: 'moe1'}, function(value, key, object) {
-  return _.isNumber(value);
+var result = _.omit({ name: 'moe', age: 50, userid: 'moe1' }, function(value, key, object) {
+    return typeof value === 'number';
 });
-console.log(result);*/
+console.log(result);
+*/
 
 /**
  *用defaults对象填充object 中的undefined属性。 并且返回这个object。一旦这个属性被填充，再使用defaults方法将不会有任何效果。（感谢@一任风月忆秋年的拍砖）
@@ -183,7 +284,16 @@ console.log(result);*/
  * @param  {Objects} *defaults 
  */
 _.defaults = function(object) {
-
+    var sources = [].slice.call(arguments, 1);
+    for (var i = 0; i < sources.length; i++) {
+        var source = sources[i];
+        for (var j in source) {
+            if (object[j] === undefined) {
+                object[j] = source[j];
+            }
+        }
+    }
+    return object;
 };
 
 //test
@@ -196,7 +306,16 @@ console.log(result);*/
  * @param  {Object} object 
  */
 _.clone = function(object) {
-
+    var result = object;
+    if (object.constructor === Function) {
+        result = object.slice(0);
+    }
+    if (object.constructor === Object) {
+        for (var i in object) {
+            result[i] = object[i];
+        }
+    }
+    return result;
 };
 
 //test
@@ -226,7 +345,7 @@ console.log(result);
  * @param  {String}  key    
  */
 _.has = function(object, key) {
-
+    return object.hasOwnProperty(key);
 };
 
 //test
@@ -238,7 +357,16 @@ console.log(result);*/
  * @param  {Object} attrs 
  */
 _.matcher = function(attrs) {
-
+    return function(obj) {
+        var isMatch = true;
+        for (var i in attrs) {
+            if (attrs[i] !== obj[i]) {
+                isMatch = false;
+                break;
+            }
+        }
+        return isMatch;
+    }
 };
 
 //test
@@ -251,7 +379,9 @@ console.log(readyToGoList);*/
  * @param  {String} key 
  */
 _.property = function(key) {
-
+    return function(object) {
+        return object[key];
+    }
 };
 
 //test
@@ -264,7 +394,9 @@ console.log(result);*/
  * @param  {Object} object 
  */
 _.propertyOf = function(object) {
-
+    return function(key) {
+        return object[key];
+    }
 };
 
 //test
@@ -278,7 +410,9 @@ console.log(result);*/
  * @param  {Object}  other  
  */
 _.isEqual = function(object, other) {
-
+    var result = true;
+    
+    return result;
 };
 
 //test
@@ -294,7 +428,14 @@ console.log(result);*/
  * @param  {Object}  properties 
  */
 _.isMatch = function(object, properties) {
-
+    var isMatch = true;
+    for (var i in properties) {
+        if (properties[i] !== object[i]) {
+            isMatch = false;
+            break;
+        }
+    }
+    return isMatch;
 };
 
 //test
@@ -303,25 +444,11 @@ var result = _.isMatch(stooge, {age: 32});
 console.log(result);*/
 
 /**
- * 如果object 不包含任何值(没有可枚举的属性)，返回true。 对于字符串和类数组（array-like）对象，如果length属性为0，那么_.isEmpty检查返回true。
- * @param  {Object}  object 
- */
-_.isEmpty = function(object) {
-
-};
-
-//test
-/*var result = _.isEmpty([1, 2, 3]);
-console.log(result);
-var result = _.isEmpty({});
-console.log(result);*/
-
-/**
  * 如果object是一个DOM元素，返回true。
  * @param  {Object}  object 
  */
 _.isElement = function(object) {
-
+    return object && object.nodeType === 1 && typeof object.nodeName === 'string';
 };
 
 //test
@@ -333,7 +460,7 @@ console.log(result);*/
  * @param  {Object}  object 
  */
 _.isArray = function(object) {
-
+    return Object.prototype.toString.call(object) === '[object Array]';
 };
 
 //test
@@ -347,7 +474,7 @@ console.log(result);*/
  * @param  {Object}  value 
  */
 _.isObject = function(value) {
-
+    return typeof value === 'function' || typeof value === 'object';
 };
 
 //test
@@ -361,7 +488,7 @@ console.log(result);*/
  * @param  {Object}  object 
  */
 _.isArguments = function(object) {
-
+    return Object.prototype.toString.call(object) === '[object Arguments]';
 };
 
 //test
@@ -375,7 +502,7 @@ console.log(result);*/
  * @param  {Object}  object 
  */
 _.isFunction = function(object) {
-
+    return Object.prototype.toString.call(object) === '[object Function]';
 };
 
 //test
@@ -387,7 +514,7 @@ console.log(result);*/
  * @param  {Object}  object 
  */
 _.isString = function(object) {
-
+    return Object.prototype.toString.call(object) === '[object String]';
 };
 
 //test
@@ -399,7 +526,7 @@ console.log(result);*/
  * @param  {Object}  object 
  */
 _.isNumber = function(object) {
-
+    return Object.prototype.toString.call(object) === '[object Number]';
 };
 
 //test
@@ -411,7 +538,7 @@ console.log(result);*/
  * @param  {Object}  object 
  */
 _.isFinite = function(object) {
-
+    return isFinite(object);
 };
 
 //test
@@ -425,7 +552,7 @@ console.log(result);*/
  * @param  {Object}  object 
  */
 _.isBoolean = function(object) {
-
+    return Object.prototype.toString.call(object) === '[object Boolean]';
 };
 
 //test
@@ -436,8 +563,8 @@ console.log(result);*/
  * Returns true if object is a Date.
  * @param  {Object}  object 
  */
-_.isDate = function(object){
-
+_.isDate = function(object) {
+    return Object.prototype.toString.call(object) === '[object Date]';
 };
 
 //test
@@ -449,7 +576,7 @@ console.log(result);*/
  * @param  {Object}  object 
  */
 _.isRegExp = function(object) {
-
+    return Object.prototype.toString.call(object) === '[object RegExp]';
 };
 
 //test
@@ -461,7 +588,7 @@ console.log(result);*/
  * @param  {Object}  object 
  */
 _.isError = function(object) {
-
+    return Object.prototype.toString.call(object) === '[object Error]';
 };
 
 //test
@@ -493,24 +620,50 @@ console.log(result);
  * @param  {Object}  object 
  */
 _.isNull = function(object) {
-
+    return object === null;
 };
 
 //test
 /*var result = _.isNull(null);
 console.log(result);
 var result = _.isNull(undefined);
-console.log(result);
-*/
+console.log(result);*/
+
 /**
  * 如果value是undefined，返回true。
  * @param  {Object}  value 
  */
 _.isUndefined = function(value) {
-
+    return value === undefined;
 };
 
 //test
-/*var result= = _.isUndefined(window.missingVariable);
+/*var result = _.isUndefined(undefined);
+console.log(result);*/
+
+/**
+ * 如果object 不包含任何值(没有可枚举的属性)，返回true。 对于字符串和类数组（array-like）对象，如果length属性为0，那么_.isEmpty检查返回true。
+ * @param  {Object}  object 
+ */
+_.isEmpty = function(object) {
+    if (object === null) {
+        return true;
+    }
+    function isLikeArray(o) {
+        if (o && typeof o === 'object' && isFinite(o.length) && o.length >= 0 && o.length === Math.floor(o.length) && o.length < 4294967296) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    if (isLikeArray(object) || _.isArray(object) || _.isString(object) || _.isArguments(object)) {
+        return object.length === 0;
+    }
+    return _.keys(object).length === 0;
+};
+
+//test
+/*var result = _.isEmpty([1, 2, 3]);
 console.log(result);
-*/
+var result = _.isEmpty({});
+console.log(result);*/
