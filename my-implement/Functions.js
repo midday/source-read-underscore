@@ -123,17 +123,32 @@ console.log('immediate')*/
  * @param  {Number}   wait      
  * @param  {Object}   [options] 
  */
-_.throttle = function(fn, wait, options) {
-	return function(){
 
-	};
+_.throttle = function(fn, wait, options) {
+    var options = options || {};
+    var timestamp = 0;
+    return function() {
+        var _args = arguments;
+        var _context = this;
+        var _now = Date.now();
+        if (!timestamp) { //第一次执行
+            timestamp = _now;
+            if (options.leading !== false) {
+                fn.call(_context, _args);
+            }
+        }
+        if (_now - timestamp > wait) {
+            fn.call(_context, _args);
+            timestamp = _now;
+        }
+    };
 };
 
 //test
-var throttled = _.throttle(function(){
-	console.log(i);
+/*var throttled = _.throttle(function(){
+    console.log(1);
 }, 100);
-$(window).scroll(throttled);
+$(window).scroll(throttled);*/
 
 
 /**
@@ -142,11 +157,28 @@ $(window).scroll(throttled);
  * @param  {Nubmer}   wait        
  * @param  {Boolean}   [immediate] 
  */
+var _ = {};
 _.debounce = function(fn, wait, immediate) {
-
+    var timer = null;
+    return function() {
+        var args = arguments;
+        var context = this;
+        if (immediate) {
+            fn.call(context, args);
+            immediate = false;
+        }
+        timer && clearTimeout(timer);
+        timer = setTimeout(function() {
+            fn.call(context, args);
+        }, wait);
+    };
 };
 
 //test
+/*var lazyLayout = _.debounce(function(){
+    console.log(1);
+}, 1000);
+$(window).resize(lazyLayout);*/
 
 /**
  * 创建一个只能调用一次的函数。重复调用改进的方法也没有效果，只会返回第一次执行时的结果。 作为初始化函数使用时非常有用, 不用再设一个boolean值来检查是否已经初始化完成.
@@ -164,7 +196,7 @@ _.once = function(fn) {
 
 //test
 /*var initialize = _.once(function(){
-	console.log(1);
+    console.log(1);
 });
 initialize();
 initialize();*/
@@ -186,7 +218,7 @@ _.after = function(count, fn) {
 
 //test
 /*var monthlyMeeting = _.after(4, function(){
-	console.log('hello');
+    console.log('hello');
 });
 monthlyMeeting();
 monthlyMeeting();
@@ -213,7 +245,7 @@ _.before = function(count, fn) {
 
 //test
 /*var monthlyMeeting = _.before(4, function(){
-	console.log('hello');
+    console.log('hello');
 });
 monthlyMeeting();
 monthlyMeeting();
