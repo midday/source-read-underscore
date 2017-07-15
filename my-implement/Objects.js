@@ -410,17 +410,49 @@ console.log(result);*/
  * @param  {Object}  other  
  */
 _.isEqual = function(object, other) {
+    // var result = JSON.stringify(object) === JSON.stringify(other);
     var result = true;
-    
+    var _isEq = function(object, other) {
+        if (object.constructor !== other.constructor) {
+            result = false;
+            return false;
+        } else {
+            if (object.constructor === Array) {
+                if (object.length !== other.length) {
+                    result = false;
+                    return false;
+                } else {
+                    for (var i = 0; i < object.length; i++) {
+                        _isEq(object[i], other[i]);
+                    }
+                }
+            } else if (object.constructor === Object) {
+                if (Object.keys(object).length !== Object.keys(other).length) {
+                    result = false;
+                    return false;
+                } else {
+                    for (var i in object) {
+                        _isEq(object[i], other[i]);
+                    }
+                }
+            } else {
+                if (object !== other) {
+                    result = false;
+                    return false;
+                }
+            }
+        }
+    }
+    _isEq(object,other);
     return result;
 };
 
 //test
-/*var stooge = {name: 'moe', luckyNumbers: [13, 27, 34]};
+var stooge = {name: 'moe', luckyNumbers: [13, 27, 34]};
 var clone  = {name: 'moe', luckyNumbers: [13, 27, 34]};
 stooge == clone;
 var result = _.isEqual(stooge, clone);
-console.log(result);*/
+console.log(result);
 
 /**
  * 告诉你properties中的键和值是否包含在object中。
